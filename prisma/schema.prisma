@@ -67,6 +67,7 @@ model Prospect {
   name        String
   jobTitle    String?
   company     String?
+  location    String?
   linkedinUrl String?
   email       String?
   notes       String?

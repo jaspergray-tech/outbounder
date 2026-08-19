@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -50,8 +51,17 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {session?.user?.role === "OWNER" && (
+        <Link
+          href="/prospects/import"
+          className="mt-8 inline-block rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white"
+        >
+          Import prospects
+        </Link>
+      )}
+
       <p className="mt-8 text-sm text-zinc-400">
-        Due today / overdue / upcoming will live here (step 4 of the build).
+        Due today / overdue / upcoming will live here (next step of the build).
       </p>
     </div>
   );
