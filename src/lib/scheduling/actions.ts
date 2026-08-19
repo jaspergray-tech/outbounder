@@ -1,7 +1,16 @@
 import { addDays } from 'date-fns'
 import { prisma } from '@/lib/prisma'
-import type { OutcomeType } from '@/generated/prisma/client'
+import type { OutcomeType, ProspectStatus } from '@/generated/prisma/client'
 import { syncActivityLogsForInstance } from './schedule'
+
+// Logging either of these outcomes exits the prospect from the cadence
+// immediately — no further steps ever fire, regardless of what step they
+// were on. Applies everywhere an outcome gets logged (dashboard dropdown,
+// sprint view, etc.), not just one entry point.
+const EXIT_CADENCE_OUTCOMES: Partial<Record<OutcomeType, ProspectStatus>> = {
+  MEETING_BOOKED: 'COMPLETED',
+  OPTED_OUT: 'OPTED_OUT',
+}
 
 // Enrolls a prospect into a sequence template and generates their initial
 // ActivityLog rows.
@@ -83,12 +92,23 @@ export async function recordOutcome(input: {
   }
 
   if (prospectId) {
-    const instances = await prisma.prospectSequenceInstance.findMany({
-      where: { prospectId, status: 'ACTIVE' },
-      select: { id: true },
-    })
-    for (const instance of instances) {
-      await syncActivityLogsForInstance(instance.id)
+    const exitStatus = EXIT_CADENCE_OUTCOMES[input.type]
+    if (exitStatus) {
+      // Exiting the cadence entirely — no further per-step recalculation
+      // needed or wanted, regardless of what step they were on.
+      await prisma.prospect.update({ where: { id: prospectId }, data: { status: exitStatus } })
+      await prisma.prospectSequenceInstance.updateMany({
+        where: { prospectId, status: 'ACTIVE' },
+        data: { status: 'COMPLETED' },
+      })
+    } else {
+      const instances = await prisma.prospectSequenceInstance.findMany({
+        where: { prospectId, status: 'ACTIVE' },
+        select: { id: true },
+      })
+      for (const instance of instances) {
+        await syncActivityLogsForInstance(instance.id)
+      }
     }
   }
 
