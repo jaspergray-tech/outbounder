@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { addDays, startOfDay } from "date-fns";
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getDisplayStatus } from "@/lib/scheduling/schedule";
+import { DashboardClient, type ActivityRow } from "./DashboardClient";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -9,6 +12,53 @@ export default async function DashboardPage() {
     prisma.sprint.count(),
     prisma.sequenceTemplate.count(),
   ]);
+
+  const today = startOfDay(new Date());
+  const upcomingWindowEnd = addDays(today, 7);
+
+  const logs = await prisma.activityLog.findMany({
+    where: {
+      status: "PENDING",
+      instance: { status: "ACTIVE", prospect: { status: "ACTIVE" } },
+      ...(session?.user?.role === "MANAGER" ? { step: { assignedRole: "MANAGER" } } : {}),
+    },
+    include: {
+      step: true,
+      instance: { include: { prospect: true } },
+    },
+    orderBy: { plannedDate: "asc" },
+  });
+
+  const overdue: ActivityRow[] = [];
+  const dueToday: ActivityRow[] = [];
+  const upcoming: ActivityRow[] = [];
+
+  for (const log of logs) {
+    const row: ActivityRow = {
+      id: log.id,
+      plannedDate: log.plannedDate,
+      dayOffset: log.step.dayOffset,
+      channel: log.step.channel,
+      prospect: {
+        id: log.instance.prospect.id,
+        name: log.instance.prospect.name,
+        company: log.instance.prospect.company,
+        jobTitle: log.instance.prospect.jobTitle,
+      },
+    };
+
+    const display = getDisplayStatus(log, today);
+    const effectiveDate =
+      log.snoozedUntil && log.snoozedUntil > log.plannedDate ? log.snoozedUntil : log.plannedDate;
+
+    if (display === "OVERDUE") {
+      overdue.push(row);
+    } else if (display === "DUE") {
+      dueToday.push(row);
+    } else if (effectiveDate <= upcomingWindowEnd) {
+      upcoming.push(row);
+    }
+  }
 
   return (
     <div className="mx-auto w-full max-w-4xl px-6 py-10">
@@ -60,9 +110,9 @@ export default async function DashboardPage() {
         </Link>
       )}
 
-      <p className="mt-8 text-sm text-zinc-400">
-        Due today / overdue / upcoming will live here (next step of the build).
-      </p>
+      <div className="mt-8">
+        <DashboardClient overdue={overdue} dueToday={dueToday} upcoming={upcoming} />
+      </div>
     </div>
   );
 }

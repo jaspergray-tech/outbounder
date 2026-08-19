@@ -16,8 +16,10 @@ import type { ActivityStatus } from '@/generated/prisma/client'
 //
 // Steps whose condition no longer evaluates true against the prospect's
 // current Outcomes are marked SKIPPED. DONE steps are never rewritten (their
-// actualDate is history), everything else (PENDING/SKIPPED) is safe to
-// recompute freely since outcomes/completions can change at any time.
+// actualDate is history) — same for a *manually* skipped step (status
+// SKIPPED with completedById set, meaning a person chose to skip it, as
+// opposed to the condition engine skipping it automatically, which leaves
+// completedById null and stays open to being recomputed as outcomes change).
 export async function syncActivityLogsForInstance(instanceId: string) {
   const instance = await prisma.prospectSequenceInstance.findUniqueOrThrow({
     where: { id: instanceId },
@@ -43,6 +45,10 @@ export async function syncActivityLogsForInstance(instanceId: string) {
       continue
     }
 
+    if (existing?.status === 'SKIPPED' && existing.completedById) {
+      continue // manually skipped — leave as-is, don't let condition re-evaluation resurrect it
+    }
+
     const plannedDate = addDays(referenceDate, step.dayOffset - referenceOffset)
     const applicable = evaluateCondition(step.condition, facts)
     const status: ActivityStatus = applicable ? 'PENDING' : 'SKIPPED'
@@ -64,18 +70,27 @@ export async function syncActivityLogsForInstance(instanceId: string) {
 
 // Display-only bucket for the dashboard/reporting: DUE/OVERDUE are never
 // persisted, they're derived from plannedDate vs. today at read time so they
-// never go stale between recalculations.
+// never go stale between recalculations. A snooze pushes the *effective*
+// date used for this comparison forward without touching the underlying
+// plannedDate/schedule chain — once snoozedUntil passes, it's ignored again.
 export type DisplayStatus = 'PENDING' | 'DUE' | 'OVERDUE' | 'DONE' | 'SKIPPED'
 
 export function getDisplayStatus(
-  log: { status: ActivityStatus; plannedDate: Date },
+  log: { status: ActivityStatus; plannedDate: Date; snoozedUntil?: Date | null },
   today: Date = startOfDay(new Date())
 ): DisplayStatus {
   if (log.status === 'DONE' || log.status === 'SKIPPED') return log.status
 
-  const planned = startOfDay(log.plannedDate)
   const todayStart = startOfDay(today)
-  if (planned.getTime() < todayStart.getTime()) return 'OVERDUE'
-  if (planned.getTime() === todayStart.getTime()) return 'DUE'
+  const planned = startOfDay(log.plannedDate)
+  // A snooze only ever pushes the effective date later — if it's earlier
+  // than (or equal to) the naturally planned date, it has no effect.
+  const effectiveDate =
+    log.snoozedUntil && startOfDay(log.snoozedUntil).getTime() > planned.getTime()
+      ? startOfDay(log.snoozedUntil)
+      : planned
+
+  if (effectiveDate.getTime() < todayStart.getTime()) return 'OVERDUE'
+  if (effectiveDate.getTime() === todayStart.getTime()) return 'DUE'
   return 'PENDING'
 }

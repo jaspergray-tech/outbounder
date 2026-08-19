@@ -173,9 +173,10 @@ enum ActivityStatus {
 
 model ActivityLog {
   id          String         @id @default(cuid())
-  plannedDate DateTime
-  actualDate  DateTime?
-  status      ActivityStatus @default(PENDING)
+  plannedDate   DateTime
+  actualDate    DateTime?
+  snoozedUntil  DateTime?
+  status        ActivityStatus @default(PENDING)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
