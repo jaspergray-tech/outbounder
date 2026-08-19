@@ -1,0 +1,224 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Auth / users ---------------------------------------------------------
+
+enum Role {
+  OWNER // Jasp — full access
+  MANAGER // GTMM / manager — sees only steps assigned to them
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  ownedTemplates  SequenceTemplate[]
+  completedSteps  ActivityLog[]
+  createdSprints  Sprint[]
+}
+
+// --- Sprints (campaign batches) -------------------------------------------
+
+enum SprintStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model Sprint {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  status      SprintStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now())
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  defaultTemplateId String?
+  defaultTemplate   SequenceTemplate? @relation(fields: [defaultTemplateId], references: [id])
+
+  prospects Prospect[]
+}
+
+// --- Prospects -------------------------------------------------------------
+
+enum ProspectStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  OPTED_OUT
+}
+
+model Prospect {
+  id          String         @id @default(cuid())
+  name        String
+  jobTitle    String?
+  company     String?
+  linkedinUrl String?
+  email       String?
+  notes       String?
+  status      ProspectStatus @default(ACTIVE)
+  createdAt   DateTime       @default(now())
+
+  sprintId String
+  sprint   Sprint @relation(fields: [sprintId], references: [id])
+
+  instances ProspectSequenceInstance[]
+  outcomes  Outcome[]
+}
+
+// --- Sequence templates + steps --------------------------------------------
+
+model SequenceTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
+
+  steps     SequenceStep[]
+  instances ProspectSequenceInstance[]
+  sprints   Sprint[]
+}
+
+enum Channel {
+  EMAIL_MINE
+  EMAIL_GTMM
+  LINKEDIN_CONNECTION_MINE
+  LINKEDIN_CONNECTION_GTMM
+  LINKEDIN_MESSAGE
+  LINKEDIN_INMAIL
+  COLD_CALL
+}
+
+enum AssignedRole {
+  OWNER
+  MANAGER
+}
+
+// SequenceStep.condition is a small generic JSON rules structure, e.g.:
+//   { "all": [
+//     { "fact": "connection_accepted", "equals": false },
+//     { "fact": "reply_received", "equals": false }
+//   ] }
+// Evaluated against a prospect's Outcomes at due-date-calculation time.
+// Null/omitted = step always fires.
+model SequenceStep {
+  id           String       @id @default(cuid())
+  templateId   String
+  template     SequenceTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  dayOffset    Int
+  channel      Channel
+  assignedRole AssignedRole
+  orderIndex   Int // ordering among same-day steps
+  condition    Json?
+  createdAt    DateTime @default(now())
+
+  activityLogs ActivityLog[]
+
+  @@index([templateId])
+}
+
+// --- Prospect <-> Template assignment --------------------------------------
+
+enum InstanceStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model ProspectSequenceInstance {
+  id        String         @id @default(cuid())
+  startDate DateTime
+  status    InstanceStatus @default(ACTIVE)
+  paused    Boolean        @default(false)
+  createdAt DateTime       @default(now())
+
+  prospectId String
+  prospect   Prospect @relation(fields: [prospectId], references: [id])
+
+  templateId String
+  template   SequenceTemplate @relation(fields: [templateId], references: [id])
+
+  activityLogs ActivityLog[]
+
+  @@index([prospectId])
+}
+
+// --- Activity log (the actual tracked record) -------------------------------
+
+enum ActivityStatus {
+  PENDING // not due yet
+  DUE // due today
+  DONE
+  SKIPPED // condition no longer true
+  OVERDUE
+}
+
+model ActivityLog {
+  id          String         @id @default(cuid())
+  plannedDate DateTime
+  actualDate  DateTime?
+  status      ActivityStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  instanceId String
+  instance   ProspectSequenceInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  stepId String
+  step   SequenceStep @relation(fields: [stepId], references: [id])
+
+  completedById String?
+  completedBy   User?   @relation(fields: [completedById], references: [id])
+
+  outcomes Outcome[]
+
+  @@index([instanceId])
+  @@index([stepId])
+}
+
+// --- Outcomes (attach to a step OR to the whole prospect) -------------------
+
+enum OutcomeType {
+  LINKEDIN_CONNECTION_ACCEPTED
+  REPLY_RECEIVED
+  MEETING_BOOKED
+  OPPORTUNITY_CREATED
+  OPTED_OUT
+}
+
+model Outcome {
+  id        String      @id @default(cuid())
+  type      OutcomeType
+  date      DateTime    @default(now())
+  notes     String?
+  createdAt DateTime    @default(now())
+
+  // Exactly one of these should be set: a step-level outcome (e.g. connection
+  // accepted on this specific LinkedIn step) or a prospect-level outcome
+  // (e.g. meeting booked, which doesn't belong to a single step).
+  activityLogId String?
+  activityLog   ActivityLog? @relation(fields: [activityLogId], references: [id])
+
+  prospectId String?
+  prospect   Prospect? @relation(fields: [prospectId], references: [id])
+
+  @@index([prospectId])
+  @@index([activityLogId])
+}
