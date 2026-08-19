@@ -70,6 +70,43 @@ export async function reopenActivityLog(activityLogId: string) {
   return log
 }
 
+// Manually moves a prospect's active step backwards (e.g. "mark done" was a
+// mistake). Resets the target step and every step at/after it in the
+// instance's (dayOffset, orderIndex) order back to an unresolved PENDING
+// state — clearing DONE/SKIPPED status, actualDate, completedById, and any
+// snooze — then re-syncs so dates and conditional skip logic recompute
+// exactly as if the prospect had just reached the target step fresh. Steps
+// strictly before the target are left untouched. Only valid for an
+// instance that's still ACTIVE (an instance that's exited the cadence via
+// a MEETING_BOOKED/OPTED_OUT outcome isn't reactivated by this).
+export async function rewindInstanceToStep(instanceId: string, targetStepId: string) {
+  const instance = await prisma.prospectSequenceInstance.findUniqueOrThrow({
+    where: { id: instanceId },
+    include: { template: { include: { steps: true } } },
+  })
+  if (instance.status !== 'ACTIVE') {
+    throw new Error('Cannot rewind a sequence that has already exited the cadence')
+  }
+
+  const targetStep = instance.template.steps.find((s) => s.id === targetStepId)
+  if (!targetStep) throw new Error('Step does not belong to this sequence')
+
+  const stepIdsToReset = instance.template.steps
+    .filter(
+      (s) =>
+        s.dayOffset > targetStep.dayOffset ||
+        (s.dayOffset === targetStep.dayOffset && s.orderIndex >= targetStep.orderIndex)
+    )
+    .map((s) => s.id)
+
+  await prisma.activityLog.updateMany({
+    where: { instanceId, stepId: { in: stepIdsToReset } },
+    data: { status: 'PENDING', actualDate: null, completedById: null, snoozedUntil: null },
+  })
+
+  await syncActivityLogsForInstance(instanceId)
+}
+
 // Logs an outcome (step-level or prospect-level) and re-syncs every active
 // sequence instance for that prospect, since outcomes can flip a downstream
 // step's condition (e.g. a reply skipping a later InMail step).

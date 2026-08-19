@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import {
   PROSPECT_FIELDS,
@@ -126,9 +127,14 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
   return (
     <div className="space-y-8">
       {result && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-          Imported {result.created} prospect{result.created === 1 ? '' : 's'} and enrolled them in the
-          sequence.
+        <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+          <span>
+            Imported {result.created} prospect{result.created === 1 ? '' : 's'} and enrolled them in the
+            sequence.
+          </span>
+          <Link href="/dashboard" className="font-medium underline hover:no-underline">
+            Back to dashboard
+          </Link>
         </div>
       )}
       {error && (
