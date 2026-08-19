@@ -15,27 +15,27 @@ export default async function DashboardPage() {
   const { overdue, dueToday, upcoming } = await getDueBuckets(session?.user?.role);
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-6 py-10">
-      <div className="grid grid-cols-3 gap-4">
-        <div className="rounded-lg border border-zinc-200 p-4">
-          <p className="text-sm text-zinc-500">Prospects</p>
-          <p className="text-2xl font-semibold">{prospectCount}</p>
+    <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+        <div className="rounded-lg border border-border bg-surface p-4">
+          <p className="text-sm text-muted">Prospects</p>
+          <p className="text-2xl font-semibold text-foreground">{prospectCount}</p>
         </div>
-        <div className="rounded-lg border border-zinc-200 p-4">
-          <p className="text-sm text-zinc-500">Sprints</p>
-          <p className="text-2xl font-semibold">{sprintCount}</p>
+        <div className="rounded-lg border border-border bg-surface p-4">
+          <p className="text-sm text-muted">Sprints</p>
+          <p className="text-2xl font-semibold text-foreground">{sprintCount}</p>
         </div>
-        <div className="rounded-lg border border-zinc-200 p-4">
-          <p className="text-sm text-zinc-500">Sequence templates</p>
-          <p className="text-2xl font-semibold">{templateCount}</p>
+        <div className="rounded-lg border border-border bg-surface p-4">
+          <p className="text-sm text-muted">Sequence templates</p>
+          <p className="text-2xl font-semibold text-foreground">{templateCount}</p>
         </div>
       </div>
 
       {session?.user?.role === "OWNER" && (
-        <div className="mt-8 flex gap-3">
+        <div className="mt-6 flex gap-3">
           <Link
             href="/prospects/import"
-            className="inline-block rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white"
+            className="inline-block rounded bg-foreground px-4 py-2 text-sm font-medium text-white hover:opacity-90"
           >
             Import prospects
           </Link>

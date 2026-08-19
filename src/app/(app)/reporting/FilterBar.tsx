@@ -25,7 +25,7 @@ export function FilterBar({
   return (
     <div className="flex flex-wrap gap-3">
       <select
-        className="rounded border border-zinc-300 p-1.5 text-sm text-zinc-700"
+        className="rounded border border-border p-1.5 text-sm text-foreground"
         value={current.sprintId ?? ''}
         onChange={(e) => update('sprintId', e.target.value)}
       >
@@ -38,7 +38,7 @@ export function FilterBar({
       </select>
 
       <select
-        className="rounded border border-zinc-300 p-1.5 text-sm text-zinc-700"
+        className="rounded border border-border p-1.5 text-sm text-foreground"
         value={current.templateId ?? ''}
         onChange={(e) => update('templateId', e.target.value)}
       >
@@ -51,7 +51,7 @@ export function FilterBar({
       </select>
 
       <select
-        className="rounded border border-zinc-300 p-1.5 text-sm text-zinc-700"
+        className="rounded border border-border p-1.5 text-sm text-foreground"
         value={current.personRole ?? ''}
         onChange={(e) => update('personRole', e.target.value)}
       >

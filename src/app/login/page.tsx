@@ -24,24 +24,24 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-zinc-50 px-4">
+    <div className="flex flex-1 items-center justify-center bg-background px-4">
       <form
         action={login}
-        className="w-full max-w-sm space-y-4 rounded-lg border border-zinc-200 bg-white p-8 shadow-sm"
+        className="w-full max-w-sm space-y-4 rounded-lg border border-border bg-surface p-8 shadow-sm"
       >
-        <h1 className="text-xl font-semibold text-zinc-900">
+        <h1 className="text-xl font-semibold text-foreground">
           Outbound Cadence Tracker
         </h1>
-        <p className="text-sm text-zinc-500">Sign in to continue</p>
+        <p className="text-sm text-muted">Sign in to continue</p>
 
         {error && (
-          <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded bg-negative-bg px-3 py-2 text-sm text-negative">
             Incorrect email or password.
           </p>
         )}
 
         <div className="space-y-1">
-          <label htmlFor="email" className="text-sm font-medium text-zinc-700">
+          <label htmlFor="email" className="text-sm font-medium text-foreground">
             Email
           </label>
           <input
@@ -49,14 +49,14 @@ export default async function LoginPage({
             name="email"
             type="email"
             required
-            className="w-full rounded border border-zinc-300 px-3 py-2 text-sm"
+            className="w-full rounded border border-border px-3 py-2 text-sm"
           />
         </div>
 
         <div className="space-y-1">
           <label
             htmlFor="password"
-            className="text-sm font-medium text-zinc-700"
+            className="text-sm font-medium text-foreground"
           >
             Password
           </label>
@@ -65,13 +65,13 @@ export default async function LoginPage({
             name="password"
             type="password"
             required
-            className="w-full rounded border border-zinc-300 px-3 py-2 text-sm"
+            className="w-full rounded border border-border px-3 py-2 text-sm"
           />
         </div>
 
         <button
           type="submit"
-          className="w-full rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+          className="w-full rounded bg-foreground px-4 py-2 text-sm font-medium text-white hover:opacity-90"
         >
           Sign in
         </button>

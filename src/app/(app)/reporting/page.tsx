@@ -13,9 +13,9 @@ function formatPercent(value: number | null): string {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-zinc-200 p-4">
-      <p className="text-sm text-zinc-500">{label}</p>
-      <p className="text-2xl font-semibold">{value}</p>
+    <div className="rounded-lg border border-border bg-surface p-4">
+      <p className="text-sm text-muted">{label}</p>
+      <p className="text-2xl font-semibold text-foreground">{value}</p>
     </div>
   )
 }
@@ -43,8 +43,8 @@ export default async function ReportingPage({
   ])
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-6 py-10">
-      <h1 className="mb-6 text-2xl font-semibold text-zinc-900">Reporting</h1>
+    <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Reporting</h1>
 
       <FilterBar
         sprints={sprints.map((s) => ({ id: s.id, name: s.name }))}
@@ -52,7 +52,7 @@ export default async function ReportingPage({
         current={{ sprintId: params.sprintId, templateId: params.templateId, personRole: params.personRole }}
       />
 
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <StatCard label="Prospects in scope" value={summary.prospectsInScope} />
         <StatCard label="Prospects contacted" value={summary.prospectsContacted} />
         <StatCard label="Steps completed" value={summary.stepsCompleted} />
@@ -63,13 +63,13 @@ export default async function ReportingPage({
         <StatCard label="Opt-out rate" value={formatPercent(summary.optOutRate)} />
       </div>
 
-      <h2 className="mt-10 mb-2 text-sm font-semibold text-zinc-900">By channel</h2>
+      <h2 className="mt-10 mb-2 text-sm font-semibold text-foreground">By channel</h2>
       {channelBreakdown.length === 0 ? (
-        <p className="text-sm text-zinc-400">No activity in scope yet.</p>
+        <p className="text-sm text-muted">No activity in scope yet.</p>
       ) : (
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-200 text-left text-zinc-500">
+            <tr className="border-b border-border text-left text-muted">
               <th className="py-2 font-medium">Channel</th>
               <th className="py-2 font-medium">Done</th>
               <th className="py-2 font-medium">Open</th>
@@ -79,7 +79,7 @@ export default async function ReportingPage({
           </thead>
           <tbody>
             {channelBreakdown.map((row) => (
-              <tr key={row.channel} className="border-b border-zinc-100">
+              <tr key={row.channel} className="border-b border-border">
                 <td className="py-2">{CHANNEL_LABELS[row.channel]}</td>
                 <td className="py-2">{row.done}</td>
                 <td className="py-2">{row.open}</td>

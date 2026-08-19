@@ -127,7 +127,7 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
   return (
     <div className="space-y-8">
       {result && (
-        <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+        <div className="flex items-center justify-between rounded-lg bg-positive-bg p-4 text-sm text-positive">
           <span>
             Imported {result.created} prospect{result.created === 1 ? '' : 's'} and enrolled them in the
             sequence.
@@ -138,17 +138,17 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
         </div>
       )}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div>
+        <div className="rounded-lg bg-negative-bg p-4 text-sm text-negative">{error}</div>
       )}
 
       {!parsed && (
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-700">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Paste a table (from Excel, Google Sheets, etc.)
             </label>
             <textarea
-              className="h-40 w-full rounded-lg border border-zinc-300 p-3 font-mono text-xs"
+              className="h-40 w-full rounded-lg border border-border p-3 font-mono text-xs"
               placeholder={'Name\tTitle\tCompany\tLocation\nLyndsey Horobin\tLearning & Performance Business Partner\tevoke\tGreater Leeds Area'}
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
@@ -159,12 +159,12 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
               type="button"
               onClick={() => applyParse(rawText)}
               disabled={!rawText.trim()}
-              className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+              className="rounded bg-foreground px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
             >
               Parse pasted table
             </button>
-            <span className="text-sm text-zinc-400">or</span>
-            <label className="cursor-pointer rounded border border-zinc-300 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50">
+            <span className="text-sm text-muted">or</span>
+            <label className="cursor-pointer rounded border border-border px-4 py-2 text-sm text-foreground hover:bg-background">
               Upload CSV
               <input
                 type="file"
@@ -183,16 +183,16 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
       {parsed && mapping && (
         <>
           <div>
-            <h2 className="mb-3 text-sm font-semibold text-zinc-900">Column mapping</h2>
+            <h2 className="mb-3 text-sm font-semibold text-foreground">Column mapping</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {PROSPECT_FIELDS.map((field) => (
                 <div key={field}>
-                  <label className="mb-1 block text-xs font-medium text-zinc-500">
+                  <label className="mb-1 block text-xs font-medium text-muted">
                     {FIELD_LABELS[field]}
                     {field === 'name' && ' *'}
                   </label>
                   <select
-                    className="w-full rounded border border-zinc-300 p-1.5 text-sm"
+                    className="w-full rounded border border-border p-1.5 text-sm"
                     value={mapping[field] ?? ''}
                     onChange={(e) =>
                       updateMapping(field, e.target.value === '' ? null : Number(e.target.value))
@@ -212,7 +212,7 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
 
           <div>
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-zinc-900">
+              <h2 className="text-sm font-semibold text-foreground">
                 Review ({includedCount} of {rows.length} selected)
               </h2>
               <button
@@ -223,14 +223,14 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
                   setRows([])
                   setIncluded([])
                 }}
-                className="text-sm text-zinc-500 underline hover:text-zinc-700"
+                className="text-sm text-muted underline hover:text-foreground"
               >
                 Start over
               </button>
             </div>
-            <div className="overflow-x-auto rounded-lg border border-zinc-200">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-50 text-xs text-zinc-500">
+                <thead className="bg-background text-xs text-muted">
                   <tr>
                     <th className="p-2"></th>
                     {PROSPECT_FIELDS.map((field) => (
@@ -242,7 +242,7 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
                 </thead>
                 <tbody>
                   {rows.map((row, rowIndex) => (
-                    <tr key={rowIndex} className="border-t border-zinc-100">
+                    <tr key={rowIndex} className="border-t border-border">
                       <td className="p-2">
                         <input
                           type="checkbox"
@@ -253,7 +253,7 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
                       {PROSPECT_FIELDS.map((field) => (
                         <td key={field} className="p-1">
                           <input
-                            className="w-full min-w-32 rounded border border-transparent p-1 text-sm hover:border-zinc-200 focus:border-zinc-400"
+                            className="w-full min-w-32 rounded border border-transparent p-1 text-sm hover:border-border focus:border-foreground/40"
                             value={row[field]}
                             onChange={(e) => updateCell(rowIndex, field, e.target.value)}
                           />
@@ -267,10 +267,10 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
           </div>
 
           <div>
-            <h2 className="mb-3 text-sm font-semibold text-zinc-900">Enroll into</h2>
+            <h2 className="mb-3 text-sm font-semibold text-foreground">Enroll into</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-zinc-500">Sprint</label>
+                <label className="mb-1 block text-xs font-medium text-muted">Sprint</label>
                 <div className="mb-2 flex gap-3 text-xs">
                   <label className="flex items-center gap-1">
                     <input
@@ -292,7 +292,7 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
                 </div>
                 {sprintMode === 'existing' ? (
                   <select
-                    className="w-full rounded border border-zinc-300 p-1.5 text-sm"
+                    className="w-full rounded border border-border p-1.5 text-sm"
                     value={sprintId}
                     onChange={(e) => selectSprint(e.target.value)}
                   >
@@ -304,7 +304,7 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
                   </select>
                 ) : (
                   <input
-                    className="w-full rounded border border-zinc-300 p-1.5 text-sm"
+                    className="w-full rounded border border-border p-1.5 text-sm"
                     placeholder="e.g. JG_17_08_Sprint"
                     value={newSprintName}
                     onChange={(e) => setNewSprintName(e.target.value)}
@@ -313,9 +313,9 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-zinc-500">Sequence template</label>
+                <label className="mb-1 block text-xs font-medium text-muted">Sequence template</label>
                 <select
-                  className="w-full rounded border border-zinc-300 p-1.5 text-sm"
+                  className="w-full rounded border border-border p-1.5 text-sm"
                   value={templateId}
                   onChange={(e) => setTemplateId(e.target.value)}
                 >
@@ -328,10 +328,10 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-zinc-500">Start date</label>
+                <label className="mb-1 block text-xs font-medium text-muted">Start date</label>
                 <input
                   type="date"
-                  className="w-full rounded border border-zinc-300 p-1.5 text-sm"
+                  className="w-full rounded border border-border p-1.5 text-sm"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                 />
@@ -343,7 +343,7 @@ export function ImportClient({ sprints, templates }: { sprints: Sprint[]; templa
             type="button"
             onClick={handleSubmit}
             disabled={submitting || includedCount === 0}
-            className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+            className="rounded bg-foreground px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
           >
             {submitting ? 'Importing…' : `Import ${includedCount} prospect${includedCount === 1 ? '' : 's'}`}
           </button>

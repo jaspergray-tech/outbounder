@@ -22,9 +22,9 @@ export default async function ImportProspectsPage() {
   ])
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 py-10">
-      <h1 className="mb-1 text-2xl font-semibold text-zinc-900">Import prospects</h1>
-      <p className="mb-8 text-sm text-zinc-500">
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+      <h1 className="mb-1 text-2xl font-semibold text-foreground">Import prospects</h1>
+      <p className="mb-8 text-sm text-muted">
         Paste a table copied from a spreadsheet, or upload a CSV file. Clean the list up before
         pasting — headers like &quot;Name&quot;, &quot;Title&quot;, &quot;Company&quot; and
         &quot;Location&quot; are detected automatically.

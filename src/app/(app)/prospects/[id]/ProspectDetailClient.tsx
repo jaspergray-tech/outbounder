@@ -1,8 +1,9 @@
 'use client'
 
 import { useTransition } from 'react'
-import type { ActivityStatus, InstanceStatus, OutcomeType } from '@/generated/prisma/client'
-import { CHANNEL_LABELS, OUTCOME_LABELS } from '@/lib/labels'
+import type { InstanceStatus, OutcomeType } from '@/generated/prisma/client'
+import { CHANNEL_LABELS, OUTCOME_LABELS, ACTIVITY_STATUS_LABELS, ACTIVITY_STATUS_TONE } from '@/lib/labels'
+import { Badge } from '@/components/Badge'
 import type { ProspectStepRow } from '@/lib/prospects/queries'
 import {
   markDoneAction,
@@ -16,14 +17,6 @@ import {
 function formatDate(d: Date | null) {
   if (!d) return '—'
   return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
-const STATUS_STYLES: Record<ActivityStatus, string> = {
-  PENDING: 'bg-zinc-100 text-zinc-600',
-  DUE: 'bg-zinc-100 text-zinc-600',
-  OVERDUE: 'bg-red-100 text-red-700',
-  DONE: 'bg-green-100 text-green-700',
-  SKIPPED: 'bg-zinc-100 text-zinc-400',
 }
 
 function StepRow({
@@ -50,24 +43,22 @@ function StepRow({
   const canRewind = instanceStatus === 'ACTIVE' && (step.status === 'DONE' || step.status === 'SKIPPED')
 
   return (
-    <tr className={`border-t border-zinc-100 ${pending ? 'opacity-50' : ''}`}>
-      <td className="py-2 pr-4 text-zinc-500">Day {step.dayOffset}</td>
+    <tr className={`border-t border-border ${pending ? 'opacity-50' : ''}`}>
+      <td className="py-2 pr-4 text-muted">Day {step.dayOffset}</td>
       <td className="py-2 pr-4">{CHANNEL_LABELS[step.channel]}</td>
-      <td className="py-2 pr-4 text-xs text-zinc-500">{step.assignedRole}</td>
+      <td className="py-2 pr-4 text-xs text-muted">{step.assignedRole}</td>
       <td className="py-2 pr-4">
-        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[step.status]}`}>
-          {step.status}
-        </span>
+        <Badge tone={ACTIVITY_STATUS_TONE[step.status]}>{ACTIVITY_STATUS_LABELS[step.status]}</Badge>
       </td>
-      <td className="py-2 pr-4 text-xs text-zinc-500">{formatDate(step.plannedDate)}</td>
-      <td className="py-2 pr-4 text-xs text-zinc-500">
+      <td className="py-2 pr-4 text-xs text-muted">{formatDate(step.plannedDate)}</td>
+      <td className="py-2 pr-4 text-xs text-muted">
         {step.actualDate ? `${formatDate(step.actualDate)}${step.completedByName ? ` · ${step.completedByName}` : ''}` : '—'}
       </td>
       <td className="py-2 text-right">
         {isActive && instanceStatus === 'ACTIVE' && (
           <div className="flex justify-end gap-2">
             <select
-              className="rounded border border-zinc-300 p-1 text-xs text-zinc-600"
+              className="rounded border border-border p-1 text-xs text-foreground"
               disabled={pending}
               defaultValue=""
               onChange={(e) => {
@@ -85,21 +76,21 @@ function StepRow({
             <button
               disabled={pending}
               onClick={() => run(() => snoozeAction(step.activityLogId, prospectId, 1))}
-              className="rounded border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+              className="rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-background"
             >
               Snooze
             </button>
             <button
               disabled={pending}
               onClick={() => run(() => skipAction(step.activityLogId, prospectId))}
-              className="rounded border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+              className="rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-background"
             >
               Skip
             </button>
             <button
               disabled={pending}
               onClick={() => run(() => markDoneAction(step.activityLogId, prospectId))}
-              className="rounded bg-zinc-900 px-2 py-1 text-xs font-medium text-white"
+              className="rounded bg-positive px-2 py-1 text-xs font-medium text-white hover:opacity-90"
             >
               Done
             </button>
@@ -117,7 +108,7 @@ function StepRow({
                 run(() => rewindStepAction(instanceId, step.stepId, prospectId))
               }
             }}
-            className="rounded border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+            className="rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-background"
           >
             Rewind to here
           </button>
@@ -153,9 +144,9 @@ export function ProspectDetailClient({
     <div>
       {canLogOutcome && (
         <div className="mb-6 flex items-center gap-2">
-          <span className="text-sm font-medium text-zinc-700">Log outcome for this prospect:</span>
+          <span className="text-sm font-medium text-foreground">Log outcome for this prospect:</span>
           <select
-            className="rounded border border-zinc-300 p-1.5 text-sm text-zinc-600"
+            className="rounded border border-border p-1.5 text-sm text-foreground"
             disabled={pending}
             defaultValue=""
             onChange={(e) => {
@@ -174,10 +165,10 @@ export function ProspectDetailClient({
       )}
 
       {steps.length === 0 ? (
-        <p className="text-sm text-zinc-400">Not enrolled in a sequence.</p>
+        <p className="text-sm text-muted">Not enrolled in a sequence.</p>
       ) : (
         <table className="w-full text-left text-sm">
-          <thead className="text-xs text-zinc-500">
+          <thead className="text-xs text-muted">
             <tr>
               <th className="pb-2 pr-4 font-medium">Day</th>
               <th className="pb-2 pr-4 font-medium">Channel</th>

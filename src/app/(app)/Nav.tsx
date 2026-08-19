@@ -31,13 +31,13 @@ export function Nav({
   const links = buildLinks(role)
 
   return (
-    <header className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-3">
-        <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="text-sm font-semibold text-zinc-900">
+    <header className="border-b border-border bg-surface">
+      <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-4 sm:gap-6">
+          <Link href="/dashboard" className="hidden text-sm font-semibold text-foreground sm:inline">
             Outbound Cadence Tracker
           </Link>
-          <nav className="flex items-center gap-1">
+          <nav className="flex flex-wrap items-center gap-1">
             {links.map((link) => {
               const active = pathname === link.href || pathname.startsWith(link.href + '/')
               return (
@@ -45,7 +45,7 @@ export function Nav({
                   key={link.href}
                   href={link.href}
                   className={`rounded px-3 py-1.5 text-sm font-medium ${
-                    active ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-zinc-100'
+                    active ? 'bg-foreground text-white' : 'text-muted hover:bg-background'
                   }`}
                 >
                   {link.label}
@@ -55,11 +55,11 @@ export function Nav({
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-zinc-500">{name}</span>
+          <span className="hidden text-sm text-muted sm:inline">{name}</span>
           <form action={onSignOut}>
             <button
               type="submit"
-              className="rounded border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
+              className="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-background"
             >
               Sign out
             </button>

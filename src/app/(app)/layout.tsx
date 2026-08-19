@@ -12,7 +12,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-zinc-50">
+    <div className="flex min-h-full flex-col bg-background">
       <Nav role={session.user.role} name={session.user.name} onSignOut={handleSignOut} />
       <main className="flex flex-1 flex-col">{children}</main>
     </div>

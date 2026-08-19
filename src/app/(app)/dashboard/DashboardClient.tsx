@@ -32,20 +32,20 @@ function Row({ row }: { row: ActivityRow }) {
 
   return (
     <div
-      className={`flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 py-3 ${pending ? 'opacity-50' : ''}`}
+      className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface p-3 ${pending ? 'opacity-50' : ''}`}
     >
       <div>
-        <p className="text-sm font-medium text-zinc-900">{row.prospect.name}</p>
-        <p className="text-xs text-zinc-500">
+        <p className="text-sm font-medium text-foreground">{row.prospect.name}</p>
+        <p className="text-xs text-muted">
           {[row.prospect.jobTitle, row.prospect.company].filter(Boolean).join(' · ')}
         </p>
-        <p className="mt-0.5 text-xs text-zinc-400">
+        <p className="mt-0.5 text-xs text-muted">
           Day {row.dayOffset} · {CHANNEL_LABELS[row.channel]} · {formatDate(row.plannedDate)}
         </p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <select
-          className="rounded border border-zinc-300 p-1 text-xs text-zinc-600"
+          className="rounded border border-border p-1 text-xs text-foreground"
           disabled={pending}
           defaultValue=""
           onChange={(e) => {
@@ -63,21 +63,21 @@ function Row({ row }: { row: ActivityRow }) {
         <button
           disabled={pending}
           onClick={() => run(() => snoozeAction(row.id, 1))}
-          className="rounded border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+          className="rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-background"
         >
           Snooze
         </button>
         <button
           disabled={pending}
           onClick={() => run(() => skipAction(row.id))}
-          className="rounded border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+          className="rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-background"
         >
           Skip
         </button>
         <button
           disabled={pending}
           onClick={() => run(() => markDoneAction(row.id))}
-          className="rounded bg-zinc-900 px-2 py-1 text-xs font-medium text-white"
+          className="rounded bg-positive px-2 py-1 text-xs font-medium text-white hover:opacity-90"
         >
           Done
         </button>
@@ -86,16 +86,18 @@ function Row({ row }: { row: ActivityRow }) {
   )
 }
 
-function Section({ title, rows }: { title: string; rows: ActivityRow[] }) {
+function Section({ title, rows, tone }: { title: string; rows: ActivityRow[]; tone?: 'negative' }) {
   if (rows.length === 0) return null
   return (
     <div className="mb-8">
-      <h2 className="mb-1 text-sm font-semibold text-zinc-900">
+      <h2 className={`mb-2 text-sm font-semibold ${tone === 'negative' ? 'text-negative' : 'text-foreground'}`}>
         {title} ({rows.length})
       </h2>
-      {rows.map((row) => (
-        <Row key={row.id} row={row} />
-      ))}
+      <div className="space-y-2">
+        {rows.map((row) => (
+          <Row key={row.id} row={row} />
+        ))}
+      </div>
     </div>
   )
 }
@@ -110,11 +112,11 @@ export function DashboardClient({
   upcoming: ActivityRow[]
 }) {
   if (overdue.length === 0 && dueToday.length === 0 && upcoming.length === 0) {
-    return <p className="text-sm text-zinc-400">Nothing due right now.</p>
+    return <p className="text-sm text-muted">Nothing due right now.</p>
   }
   return (
     <div>
-      <Section title="Overdue" rows={overdue} />
+      <Section title="Overdue" rows={overdue} tone="negative" />
       <Section title="Due today" rows={dueToday} />
       <Section title="Upcoming (next 7 days)" rows={upcoming} />
     </div>
