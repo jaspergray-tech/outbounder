@@ -56,12 +56,20 @@ export default async function DashboardPage() {
       </div>
 
       {session?.user?.role === "OWNER" && (
-        <Link
-          href="/prospects/import"
-          className="mt-8 inline-block rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white"
-        >
-          Import prospects
-        </Link>
+        <div className="mt-8 flex gap-3">
+          <Link
+            href="/prospects/import"
+            className="inline-block rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white"
+          >
+            Import prospects
+          </Link>
+          <Link
+            href="/reporting"
+            className="inline-block rounded border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+          >
+            Reporting
+          </Link>
+        </div>
       )}
 
       <div className="mt-8">
